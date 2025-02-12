@@ -25,7 +25,7 @@ class Logic:
     def import_groups(self):
         user_sets = self.db.get_user_sets()
         
-        groups_df = pd.read_csv(DataBase.DATABASE_FILE_PATH, encoding=DataBase.DEFAULT_ENCODING)
+        groups_df = pd.read_csv(self.db.get_database_file_path(), encoding=DataBase.DEFAULT_ENCODING)
         groups_dict = {row['Login']: row['Group'] for _, row in groups_df.iterrows()}
         
         updated_user_sets = {}
@@ -42,7 +42,7 @@ class Logic:
         df.to_csv(file_path, index=False, encoding=DataBase.DEFAULT_ENCODING, mode="a")
         
     def create_empty_database(self):
-        file_path = DataBase.DATABASE_FILE_PATH
+        file_path = self.db.get_database_file_path()
         df = pd.DataFrame(columns=["Login", "Group"])
         df.to_csv(file_path, index=False, encoding=DataBase.DEFAULT_ENCODING)
     
@@ -57,8 +57,8 @@ class Logic:
                 
         self.db.set_user_sets(user_sets)
         df = pd.DataFrame(self.db.get_sorted_list_of_user_sets(), columns=["Login", "Group"])
-        df.to_csv(self.db.DATABASE_FILE_PATH, index=False, encoding=DataBase.DEFAULT_ENCODING)
+        df.to_csv(self.db.get_database_file_path(), index=False, encoding=DataBase.DEFAULT_ENCODING)
         
-        
+    
         
         

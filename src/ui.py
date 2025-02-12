@@ -39,6 +39,9 @@ class GroupTrackUI:
 
         self.edit_button = tk.Button(left_frame, text="Відкрити базу даних", command=self.open_database_button)
         self.edit_button.grid(row=3, pady=5)
+        
+        self.edit_button = tk.Button(left_frame, text="Поміняти базу даних", command=self.change_database_button)
+        self.edit_button.grid(row=4, pady=5)
 
         self.edit_group_button = tk.Button(right_menu, text="Редагувати групи вибраних студентів", command=self.edit_group_in_tree)
         self.edit_group_button.grid(row=0, column=0, padx=10)
@@ -48,10 +51,10 @@ class GroupTrackUI:
 
         # Labels
         self.meeting_code_label = ttk.Label(left_frame)
-        self.meeting_code_label.grid(row=4, pady=5)
+        self.meeting_code_label.grid(row=6, pady=5)
 
         self.created_on_label = ttk.Label(left_frame)
-        self.created_on_label.grid(row=5, pady=5)
+        self.created_on_label.grid(row=7, pady=5)
 
         # Treeview
         self.tree = ttk.Treeview(right_frame, columns=("Логін", "Група"), show="headings")
@@ -67,6 +70,7 @@ class GroupTrackUI:
         right_frame.grid_columnconfigure(0, weight=1)
 
         self.update_data()
+        
 
         
     # Button commands
@@ -91,7 +95,7 @@ class GroupTrackUI:
             self.logic.save_output_file(file_path)
 
     def open_database_button(self):
-        file_path = DataBase.DATABASE_FILE_PATH
+        file_path = self.db.get_database_file_path()
         if os.path.exists(file_path):
             os.startfile(file_path)
         else:
@@ -100,6 +104,12 @@ class GroupTrackUI:
     
     
     # Other
+    def change_database_button(self):
+        file_path = filedialog.askopenfilename(filetypes=[("CSV файли", "*.csv")])
+        if file_path:
+            self.db.set_database_file_path(file_path)
+            self.db.export_setting()
+    
     def ask_create_empty_database(self):
         response = tk.messagebox.askyesno(
             "База даних не знайдена",

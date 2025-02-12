@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 from pathlib import Path
 
 class DataBase:
@@ -14,10 +15,8 @@ class DataBase:
     else:
         # Running in a normal Python process
         RUNNING_FILE = __file__
+        
     BASE_PATH = Path(RUNNING_FILE).parent
-    
-    DATABASE_FILE_NAME = "groups.csv"
-    DATABASE_FILE_PATH = os.path.join(BASE_PATH, "database", DATABASE_FILE_NAME)
     DEFAULT_ENCODING = "utf-8-sig"
     
     def __init__(self):
@@ -27,6 +26,10 @@ class DataBase:
         self._created_on = None
         
         self._imported_file_path = None
+        self._database_file_path = os.path.join(self.BASE_PATH, "database", "groups.csv")
+        self._setting_file_path = os.path.join(self.BASE_PATH, "settings.json")
+        
+        self.import_setting()
 
     def get_sorted_list_of_user_sets(self):
         user_sets = self.get_user_sets()
@@ -66,4 +69,33 @@ class DataBase:
         return self.NONE_DATE_AND_TIME
     
     
+    def set_database_file_path(self, database_file_path):
+        self._database_file_path = database_file_path
+        
+    def get_database_file_path(self):
+        return self._database_file_path
     
+    
+    def set_setting_file_path(self, setting_file_path):
+        self._setting_file_path = setting_file_path
+    
+    def get_setting_file_path(self):
+        return self._setting_file_path
+    
+    
+    def import_setting(self):
+        with open(self.get_setting_file_path(), "r", encoding=self.DEFAULT_ENCODING) as f:
+            settings = json.load(f)
+        self.set_database_file_path(settings["database_file_path"])
+        self.set_setting_file_path(settings["setting_file_path"])
+    
+    def export_setting(self):
+        settings = {
+            "database_file_path" : self.get_database_file_path(),
+            "setting_file_path" : self.get_setting_file_path(),
+        }
+        with open(self.get_setting_file_path(), "w", encoding=self.DEFAULT_ENCODING) as file:
+            json.dump(settings, file, indent=4)
+        
+        
+        
