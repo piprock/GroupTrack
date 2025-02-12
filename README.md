@@ -3,7 +3,7 @@ GroupTrack — це програма для обробки списків при
 
 # Відео огляд
 <a href="https://www.youtube.com/watch?v=6h7mcS2DbqI" target="_blank">
-  <img src="https://img.youtube.com/vi/6h7mcS2DbqI/0.jpg" alt="Your Video" />
+  <img src="https://img.youtube.com/vi/6h7mcS2DbqI/0.jpg" alt="Video" />
 </a>
 
 ## Завантаження та запуск
