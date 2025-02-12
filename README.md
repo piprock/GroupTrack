@@ -1,6 +1,11 @@
 # GroupTrack
 GroupTrack — це програма для обробки списків присутніх у Google Meet, яка додає студентів до списку, сортує та визначає групу з бази даних. Вона доповнює розширення Google Meet Attendance List і спрощує управління студентськими групами.
 
+# Відео огляд
+<a href="https://www.youtube.com/watch?v=6h7mcS2DbqI" target="_blank">
+  <img src="https://img.youtube.com/vi/6h7mcS2DbqI/0.jpg" alt="Your Video" />
+</a>
+
 ## Завантаження та запуск
 ### Завантаження релізу
 1. Завантажте останню версію програми з GitHub Releases.
