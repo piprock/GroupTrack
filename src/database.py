@@ -1,13 +1,23 @@
 import os
+import sys
+from pathlib import Path
 
 class DataBase:
     NONE_STRING = "---"
     NONE_GROUP = "Unknown"
     NONE_DATE_AND_TIME = "0000-00-00 00:00:00"
     NONE_CODE = "xxx-xxx-xxx"
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    
+    if getattr(sys, 'frozen', False):
+        # Running in a PyInstaller bundle
+        RUNNING_FILE = sys.executable
+    else:
+        # Running in a normal Python process
+        RUNNING_FILE = __file__
+    BASE_PATH = Path(RUNNING_FILE).parent
+    
     DATABASE_FILE_NAME = "groups.csv"
-    DATABASE_FILE_PATH = os.path.join(BASE_DIR, "database", DATABASE_FILE_NAME)
+    DATABASE_FILE_PATH = os.path.join(BASE_PATH, "database", DATABASE_FILE_NAME)
     DEFAULT_ENCODING = "utf-8-sig"
     
     def __init__(self):
