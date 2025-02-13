@@ -1,4 +1,7 @@
 import pandas as pd
+import os
+import json
+
 from database import DataBase
 
 class Logic:
@@ -41,10 +44,6 @@ class Logic:
             f.write("".join(self.db.get_header_info()[:-1]))
         df.to_csv(file_path, index=False, encoding=DataBase.DEFAULT_ENCODING, mode="a")
         
-    def create_empty_database(self):
-        file_path = self.db.get_database_file_path()
-        df = pd.DataFrame(columns=["Login", "Group"])
-        df.to_csv(file_path, index=False, encoding=DataBase.DEFAULT_ENCODING)
     
     def apply_changes_to_database(self, tree):
         all_items_id = tree.get_children()
@@ -59,6 +58,45 @@ class Logic:
         df = pd.DataFrame(self.db.get_sorted_list_of_user_sets(), columns=["Login", "Group"])
         df.to_csv(self.db.get_database_file_path(), index=False, encoding=DataBase.DEFAULT_ENCODING)
         
+    def create_default_empty_database(self):
+        file_path = self.db.DEFAULT_DATA_BASE_FILE_PATH
+        df = pd.DataFrame(columns=["Login", "Group"])
+        df.to_csv(file_path, index=False, encoding=DataBase.DEFAULT_ENCODING)
+        self.change_database(file_path)
+        
     
+    
+    # True - DB found
+    # False - Created or selected default DB
+    def import_settings(self):
+        with open(self.db.SETTINGS_PATH, "r", encoding=self.db.DEFAULT_ENCODING) as f:
+            settings = json.load(f)
+        if os.path.exists(settings["database_file_path"]):
+            self.change_database(settings["database_file_path"])
+            return True
+        else:
+            if os.path.exists(self.db.DEFAULT_DATA_BASE_FILE_PATH):
+                self.change_database(self.db.DEFAULT_DATA_BASE_FILE_PATH)
+            else:
+                self.create_default_empty_database()
+            return False
+    
+    def write_settings_to_file(self, settings):
+        with open(self.db.SETTINGS_PATH, "w", encoding=self.db.DEFAULT_ENCODING) as file:
+            json.dump(settings, file, indent=4)
+    
+    def export_settings(self):
+        settings = {
+            "database_file_path" : self.db.get_database_file_path()
+        }
+        self.write_settings_to_file(settings)
+            
+    def create_default_settings(self):
+        settings = {
+            "database_file_path" : self.db.DEFAULT_DATA_BASE_FILE_PATH
+        }
+        self.write_settings_to_file(settings)
         
-        
+    def change_database(self, file_path):
+        self.db.set_database_file_path(file_path)
+        self.export_settings()

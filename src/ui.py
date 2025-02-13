@@ -11,6 +11,14 @@ class GroupTrackUI:
         self.logic = Logic(db)
         self.db = db
         
+        try:
+            is_db_found = self.logic.import_settings()
+            if not is_db_found:
+                tk.messagebox.showinfo("Базу даних змінено", "Невдалося знайти базу даних з налаштувань, тому вибрана база по замовчуванню.")
+        except:
+            tk.messagebox.showerror("Помилка", f"Файл налаштувань містить помилки! Буде створено новий з налаштуваннями по замовчуванню!")
+            self.logic.create_default_settings()
+        
         #root
         self.root = root
         self.root.title("GroupTrack")
@@ -81,8 +89,13 @@ class GroupTrackUI:
             self.update_data()
             
     def import_groups_button(self):
-        self.logic.import_groups()
-        self.update_tree_data()
+        try:
+            self.logic.import_groups()
+            self.update_tree_data()
+        except:
+            tk.messagebox.showerror("Помилка", f"Поточна база даних містить помилки!")
+            self.ask_create_empty_database()
+            
 
     def save_output_file_button(self):
         default_name = f"FORMATED_meeting_{self.db.get_created_on().replace(":", "-")}"
@@ -107,16 +120,15 @@ class GroupTrackUI:
     def change_database_button(self):
         file_path = filedialog.askopenfilename(filetypes=[("CSV файли", "*.csv")])
         if file_path:
-            self.db.set_database_file_path(file_path)
-            self.db.export_setting()
+            self.logic.change_database(file_path)
     
     def ask_create_empty_database(self):
         response = tk.messagebox.askyesno(
-            "База даних не знайдена",
-            "База даних не знайдена. Створити порожню базу?"
+            "Створення порожньої бази даних",
+            "Створити порожню базу?"
         )
         if response:
-            self.logic.create_empty_database()
+            self.logic.create_default_empty_database()
             tk.messagebox.showinfo("Успішно", "База створена.")
     
     def update_data(self):
@@ -147,28 +159,35 @@ class GroupTrackUI:
         selected_items = self.tree.selection()
         
         if selected_items:
-            # Create new window for edit group of selected rows
             edit_window = tk.Toplevel(self.root)
-            edit_window.title("Змінити групи вибраних студентів")
+            edit_window.resizable(0, 0)
+            edit_window.title("Зміна групи")
             
             group_label = tk.Label(edit_window, text="Нова група")
-            group_label.grid(row=0, column=0)
-            group_entry = tk.Entry(edit_window)
-            group_entry.grid(row=0, column=1)
+            group_label.grid(row=0, column=0, padx=10, pady=10)
             
+            group_entry = tk.Entry(edit_window)
+            group_entry.grid(row=0, column=1, padx=10, pady=10)
+            group_entry.focus_set()
+
             def save_changes():
                 new_group = group_entry.get()
-                user_sets = self.db.get_user_sets()
+                if not new_group.strip():
+                    new_group = self.db.NONE_GROUP
                 
+                user_sets = self.db.get_user_sets()
+
                 for item in selected_items:
                     current_values = self.tree.item(item, "values")
                     user_sets[current_values[0]] = new_group
-                    
+
                 self.db.set_user_sets(user_sets)
-                
                 self.update_tree_data()
                 edit_window.destroy()
-            
+
             save_button = tk.Button(edit_window, text="Save", command=save_changes)
-            save_button.grid(row=1, columnspan=2)
+            save_button.grid(row=1, columnspan=2, padx=10, pady=10)
+
+            edit_window.bind("<Return>", lambda event: save_changes())
+
             

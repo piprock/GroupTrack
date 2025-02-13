@@ -2,7 +2,7 @@ from tkinter import Tk
 from ui import GroupTrackUI
 from database import DataBase
 
-def main(): 
+def main():
     db = DataBase()
     
     root = Tk()
