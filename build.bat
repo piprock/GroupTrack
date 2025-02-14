@@ -1,7 +1,6 @@
 pyinstaller --onefile --noconsole --name GroupTrack src\main.py
 xcopy src\database dist\database\ /E
 copy README.md dist
-copy src\settings.json dist
 copy LICENSE dist
 set name=GroupTrack_v%1
 rename dist "%name%"

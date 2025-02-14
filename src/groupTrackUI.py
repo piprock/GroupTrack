@@ -21,7 +21,11 @@ class GroupTrackUI:
         
         # Import settings
         try:
-            is_db_found = self.logic.import_settings()
+            is_db_found = True
+            if os.path.exists(self.db.SETTINGS_PATH):
+                is_db_found = self.logic.import_settings()
+            else:
+                self.logic.create_default_settings()
             if not is_db_found:
                 messagebox.showinfo("Базу даних змінено", "Невдалося знайти базу даних з налаштувань, тому вибрана база по замовчуванню.")
         except:
@@ -112,7 +116,8 @@ class GroupTrackUI:
         self.ask_create_empty_database()
 
     def save_output_file_button(self):
-        default_name = f"FORMATED_meeting_{self.db.get_created_on().replace(":", "-")}"
+        date_string = self.db.get_created_on().replace(":", "-")
+        default_name = f"FORMATED_meeting_{date_string}"
         file_path = filedialog.asksaveasfilename(
             defaultextension=".csv",
             filetypes=[("CSV файли", "*.csv")],
