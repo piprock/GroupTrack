@@ -46,16 +46,17 @@ class Logic:
         
     
     def apply_changes_to_database(self, tree):
+        groups_df = pd.read_csv(self.db.get_database_file_path(), encoding=DataBase.DEFAULT_ENCODING)
+        groups_dict = {row['Login']: row['Group'] for _, row in groups_df.iterrows()}
+        
         all_items_id = tree.get_children()
-        user_sets = self.db.get_user_sets()
 
         for id in all_items_id:
             values = tree.item(id, "values")
-            if values[1] != DataBase.NONE_GROUP:
-                user_sets[values[0]] = values[1]
+            if values[1] != self.db.NONE_GROUP:
+                groups_dict[values[0]] = values[1]
                 
-        self.db.set_user_sets(user_sets)
-        df = pd.DataFrame(self.db.get_sorted_list_of_user_sets(), columns=["Login", "Group"])
+        df = pd.DataFrame(self.db.get_sorted_list_of_dict(groups_dict), columns=["Login", "Group"])
         df.to_csv(self.db.get_database_file_path(), index=False, encoding=DataBase.DEFAULT_ENCODING)
         
     def create_default_empty_database(self):

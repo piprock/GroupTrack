@@ -31,9 +31,12 @@ class DataBase:
 
     def get_sorted_list_of_user_sets(self):
         user_sets = self.get_user_sets()
-        sorted_list_of_user_sets = list(user_sets.items())
-        sorted_list_of_user_sets.sort(key=lambda visual_list: (visual_list[1], visual_list[0]))
-        return sorted_list_of_user_sets
+        return self.get_sorted_list_of_dict(user_sets)
+    
+    def get_sorted_list_of_dict(self, your_dict):
+        sorted_list_of_dict = list(your_dict.items())
+        sorted_list_of_dict.sort(key=lambda values: (values[1], values[0]))
+        return sorted_list_of_dict
     
     def get_imported_file_path(self):
         return self._imported_file_path

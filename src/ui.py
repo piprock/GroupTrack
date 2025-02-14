@@ -11,6 +11,12 @@ class GroupTrackUI:
         self.logic = Logic(db)
         self.db = db
         
+        # Root
+        self.root = root
+        self.root.title("GroupTrack")
+        self.root.geometry("800x600")
+        
+        # Import settings
         try:
             is_db_found = self.logic.import_settings()
             if not is_db_found:
@@ -18,11 +24,6 @@ class GroupTrackUI:
         except:
             tk.messagebox.showerror("Помилка", f"Файл налаштувань містить помилки! Буде створено новий з налаштуваннями по замовчуванню!")
             self.logic.create_default_settings()
-        
-        #root
-        self.root = root
-        self.root.title("GroupTrack")
-        self.root.geometry("800x600")
         
         # Frames
         left_frame = tk.Frame(root)
@@ -44,6 +45,7 @@ class GroupTrackUI:
 
         self.save_button = tk.Button(left_frame, text="Зберегти вихідний файл", command=self.save_output_file_button)
         self.save_button.grid(row=2, pady=5)
+        root.bind("<Control-s>", lambda event: self.save_output_file_button())
 
         self.edit_button = tk.Button(left_frame, text="Відкрити базу даних", command=self.open_database_button)
         self.edit_button.grid(row=3, pady=5)
@@ -53,6 +55,7 @@ class GroupTrackUI:
 
         self.edit_group_button = tk.Button(right_menu, text="Редагувати групи вибраних студентів", command=self.edit_group_in_tree)
         self.edit_group_button.grid(row=0, column=0, padx=10)
+        root.bind("<Return>", lambda event: self.edit_group_in_tree())
 
         self.edit_group_button = tk.Button(right_menu, text="Оновити базу поточними змінами", command=self.apply_changes_to_database_button)
         self.edit_group_button.grid(row=0, column=1, padx=5)
@@ -79,6 +82,10 @@ class GroupTrackUI:
 
         self.update_data()
         
+        
+        
+        
+        
 
         
     # Button commands
@@ -93,9 +100,12 @@ class GroupTrackUI:
             self.logic.import_groups()
             self.update_tree_data()
         except:
-            tk.messagebox.showerror("Помилка", f"Поточна база даних містить помилки!")
-            self.ask_create_empty_database()
+            self.database_error()
             
+            
+    def database_error(self):
+        tk.messagebox.showerror("Помилка", f"Поточна база даних містить помилки!")
+        self.ask_create_empty_database()
 
     def save_output_file_button(self):
         default_name = f"FORMATED_meeting_{self.db.get_created_on().replace(":", "-")}"
@@ -113,48 +123,20 @@ class GroupTrackUI:
             os.startfile(file_path)
         else:
             self.ask_create_empty_database()
-    
-    
-    
-    # Other
-    def change_database_button(self):
-        file_path = filedialog.askopenfilename(filetypes=[("CSV файли", "*.csv")])
-        if file_path:
-            self.logic.change_database(file_path)
-    
-    def ask_create_empty_database(self):
-        response = tk.messagebox.askyesno(
-            "Створення порожньої бази даних",
-            "Створити порожню базу?"
-        )
-        if response:
-            self.logic.create_default_empty_database()
-            tk.messagebox.showinfo("Успішно", "База створена.")
-    
-    def update_data(self):
-        self.update_meta_data()
-        self.update_tree_data()
-    
-    def update_meta_data(self):
-        self.meeting_code_label.config(text=f"Код зустрічі: {self.db.get_meeting_code()}")
-        self.created_on_label.config(text=f"Дата створення: {self.db.get_created_on()}")
-
-    def update_tree_data(self):
-        visual_list = self.db.get_sorted_list_of_user_sets()
-        self.tree.delete(*self.tree.get_children())
-        for user_set in visual_list:
-            self.tree.insert("", "end", values=user_set)
-        
+            
     def apply_changes_to_database_button(self):
         response = tk.messagebox.askyesno(
             "Ви впевнені?",
             "Ви впевнені що хочете замінити існуючи поля бази данних вашими зміненими полями?"
         )
         if response:
-            self.logic.apply_changes_to_database(self.tree)
-            self.update_tree_data()
-            tk.messagebox.showinfo("Успішно", "База оновлена.")
-            
+            try:
+                self.logic.apply_changes_to_database(self.tree)
+                self.update_tree_data()
+                tk.messagebox.showinfo("Успішно", "База оновлена.")
+            except:
+                self.database_error()
+                
     def edit_group_in_tree(self):
         selected_items = self.tree.selection()
         
@@ -171,8 +153,8 @@ class GroupTrackUI:
             group_entry.focus_set()
 
             def save_changes():
-                new_group = group_entry.get()
-                if not new_group.strip():
+                new_group = group_entry.get().strip()
+                if not new_group:
                     new_group = self.db.NONE_GROUP
                 
                 user_sets = self.db.get_user_sets()
@@ -189,5 +171,49 @@ class GroupTrackUI:
             save_button.grid(row=1, columnspan=2, padx=10, pady=10)
 
             edit_window.bind("<Return>", lambda event: save_changes())
+    
+    
+    
+    
+    
+    
+    # Other
+    def change_database_button(self):
+        file_path = filedialog.askopenfilename(filetypes=[("CSV файли", "*.csv")])
+        if file_path:
+            self.logic.change_database(file_path)
+    
+    def ask_create_empty_database(self):
+        response = tk.messagebox.askyesno(
+            "Створення порожньої бази даних",
+            "Створити порожню базу?"
+        )
+        if response:
+            response2 = True
+            if os.path.exists(self.db.DEFAULT_DATA_BASE_FILE_PATH):
+                response2 = tk.messagebox.askyesno(
+                    "Створення порожньої бази даних",
+                    "База по замовчуванню вже існує, ви впевнені що хочете замінити його пустою базою?"
+                )
+            if response2:
+                self.logic.create_default_empty_database()
+                tk.messagebox.showinfo("Успішно", "База створена.")
+    
+    def update_data(self):
+        self.update_meta_data()
+        self.update_tree_data()
+    
+    def update_meta_data(self):
+        self.meeting_code_label.config(text=f"Код зустрічі: {self.db.get_meeting_code()}")
+        self.created_on_label.config(text=f"Дата створення: {self.db.get_created_on()}")
+
+    def update_tree_data(self):
+        visual_list = self.db.get_sorted_list_of_user_sets()
+        self.tree.delete(*self.tree.get_children())
+        for user_set in visual_list:
+            self.tree.insert("", "end", values=user_set)
+    
+            
+    
 
             
