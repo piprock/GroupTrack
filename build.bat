@@ -6,5 +6,4 @@ set name=GroupTrack_v%1
 rename dist "%name%"
 tar -cf "%name%.zip" "%name%"
 rmdir /S /Q build
-rmdir /S /Q %name%
 del GroupTrack.spec
