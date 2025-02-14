@@ -1,5 +1,5 @@
 from tkinter import Tk
-from ui import GroupTrackUI
+from groupTrackUI import GroupTrackUI
 from database import DataBase
 
 def main():

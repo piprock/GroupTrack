@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+from tkinter import messagebox
 import os
 
 from logic import Logic
@@ -8,22 +9,25 @@ from database import DataBase
 
 class GroupTrackUI:
     def __init__(self, root, db: DataBase):
-        self.logic = Logic(db)
         self.db = db
+        self.logic = Logic(self.db)
+        
         
         # Root
         self.root = root
         self.root.title("GroupTrack")
         self.root.geometry("800x600")
         
+        
         # Import settings
         try:
             is_db_found = self.logic.import_settings()
             if not is_db_found:
-                tk.messagebox.showinfo("Базу даних змінено", "Невдалося знайти базу даних з налаштувань, тому вибрана база по замовчуванню.")
+                messagebox.showinfo("Базу даних змінено", "Невдалося знайти базу даних з налаштувань, тому вибрана база по замовчуванню.")
         except:
-            tk.messagebox.showerror("Помилка", f"Файл налаштувань містить помилки! Буде створено новий з налаштуваннями по замовчуванню!")
+            messagebox.showerror("Помилка", f"Файл налаштувань містить помилки! Буде створено новий з налаштуваннями по замовчуванню!")
             self.logic.create_default_settings()
+        
         
         # Frames
         left_frame = tk.Frame(root)
@@ -53,7 +57,7 @@ class GroupTrackUI:
         self.edit_button = tk.Button(left_frame, text="Поміняти базу даних", command=self.change_database_button)
         self.edit_button.grid(row=4, pady=5)
 
-        self.edit_group_button = tk.Button(right_menu, text="Редагувати групи вибраних студентів", command=self.edit_group_in_tree)
+        self.edit_group_button = tk.Button(right_menu, text="Редагувати групи вибрані елементи", command=self.edit_group_in_tree)
         self.edit_group_button.grid(row=0, column=0, padx=10)
         root.bind("<Return>", lambda event: self.edit_group_in_tree())
 
@@ -104,7 +108,7 @@ class GroupTrackUI:
             
             
     def database_error(self):
-        tk.messagebox.showerror("Помилка", f"Поточна база даних містить помилки!")
+        messagebox.showerror("Помилка", f"Поточна база даних містить помилки!")
         self.ask_create_empty_database()
 
     def save_output_file_button(self):
@@ -125,7 +129,7 @@ class GroupTrackUI:
             self.ask_create_empty_database()
             
     def apply_changes_to_database_button(self):
-        response = tk.messagebox.askyesno(
+        response = messagebox.askyesno(
             "Ви впевнені?",
             "Ви впевнені що хочете замінити існуючи поля бази данних вашими зміненими полями?"
         )
@@ -133,7 +137,7 @@ class GroupTrackUI:
             try:
                 self.logic.apply_changes_to_database(self.tree)
                 self.update_tree_data()
-                tk.messagebox.showinfo("Успішно", "База оновлена.")
+                messagebox.showinfo("Успішно", "База оновлена.")
             except:
                 self.database_error()
                 
@@ -184,20 +188,20 @@ class GroupTrackUI:
             self.logic.change_database(file_path)
     
     def ask_create_empty_database(self):
-        response = tk.messagebox.askyesno(
+        response = messagebox.askyesno(
             "Створення порожньої бази даних",
             "Створити порожню базу?"
         )
         if response:
             response2 = True
             if os.path.exists(self.db.DEFAULT_DATA_BASE_FILE_PATH):
-                response2 = tk.messagebox.askyesno(
+                response2 = messagebox.askyesno(
                     "Створення порожньої бази даних",
                     "База по замовчуванню вже існує, ви впевнені що хочете замінити його пустою базою?"
                 )
             if response2:
                 self.logic.create_default_empty_database()
-                tk.messagebox.showinfo("Успішно", "База створена.")
+                messagebox.showinfo("Успішно", "База створена.")
     
     def update_data(self):
         self.update_meta_data()
